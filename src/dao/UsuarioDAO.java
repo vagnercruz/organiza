@@ -38,4 +38,22 @@ public class UsuarioDAO {
             }
         }
     }
+
+    public Usuario buscarPorId(int id) throws SQLException {
+        String sql = "SELECT * FROM usuarios WHERE id = ?";
+        PreparedStatement stmt = Conexao.conectar().prepareStatement(sql);
+        stmt.setInt(1, id);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            Usuario u = new Usuario();
+            u.setId(rs.getInt("id"));
+            u.setNome(rs.getString("nome"));
+            u.setEmail(rs.getString("email"));
+            u.setSenha(rs.getString("senha"));
+            return u;
+        }
+
+        return null;
+    }
 }

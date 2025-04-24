@@ -35,4 +35,12 @@ public class UsuarioController {
             return null;
         }
     }
+
+    public Usuario buscarPorId(int id) {
+        try {
+            return dao.buscarPorId(id);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
