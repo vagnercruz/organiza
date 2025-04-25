@@ -19,6 +19,9 @@ public class DashboardView extends JFrame {
         bemVindo.setHorizontalAlignment(SwingConstants.CENTER);
 
         JButton btnNovaTransacao = new JButton("Nova Transação");
+        btnNovaTransacao.addActionListener(e -> {
+            new NovaTransacaoView(usuario);
+        });
         JButton btnVerTransacoes = new JButton("Ver Transações");
         JButton btnSaldo = new JButton("Consultar Saldo");
         JButton btnLogout = new JButton("Logout");
