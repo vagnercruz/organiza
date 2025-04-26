@@ -54,6 +54,7 @@ public class LoginView extends JFrame {
                 if (usuario != null){
                     JOptionPane.showMessageDialog(null, "Bem-vindo, " + usuario.getNome() + "!");
                     dispose();
+                    new DashboardView(usuario);
                 }else{
                     JOptionPane.showMessageDialog(null, "Email ou senha inválidos.");
                 }
