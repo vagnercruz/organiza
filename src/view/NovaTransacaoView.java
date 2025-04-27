@@ -48,19 +48,36 @@ public class NovaTransacaoView extends JFrame {
 
         btnSalvar.addActionListener(e -> {
             try {
+                String tipo = comboTipo.getSelectedItem().toString();
+                String descricao = txtDescricao.getText().trim();
+                String valorStr = txtValor.getText().trim();
+                Date selectedDate = (Date) datePicker.getModel().getValue();
+
+                if (descricao.isEmpty() || valorStr.isEmpty() || selectedDate == null) {
+                    JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                double valor;
+                try {
+                    valor = Double.parseDouble(valorStr);
+                    if (valor <= 0) {
+                        JOptionPane.showMessageDialog(this, "O valor deve ser maior que zero.", "Erro", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Valor inválido. Digite um número válido.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                LocalDate dataTransacao = selectedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
                 Transacao t = new Transacao();
                 t.setUsuarioId(usuario.getId());
-                t.setTipo(comboTipo.getSelectedItem().toString());
-                t.setDescricao(txtDescricao.getText());
-                t.setValor(Double.parseDouble(txtValor.getText()));
-
-                Date selectedDate = (Date) datePicker.getModel().getValue();
-                if (selectedDate != null) {
-                    LocalDate localDate = selectedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    t.setData_transacao(localDate);
-                } else {
-                    throw new IllegalArgumentException("Data não selecionada.");
-                }
+                t.setTipo(tipo);
+                t.setDescricao(descricao);
+                t.setValor(valor);
+                t.setData_transacao(dataTransacao);
 
                 TransacaoController tc = new TransacaoController();
                 tc.cadastrar(t);
@@ -68,9 +85,10 @@ public class NovaTransacaoView extends JFrame {
                 JOptionPane.showMessageDialog(this, "Transação cadastrada com sucesso!");
                 dispose();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro ao cadastrar transação: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Erro ao cadastrar transação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
         });
+
 
         // Layout
         setLayout(new GridLayout(5, 2, 5, 5));
