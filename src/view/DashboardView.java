@@ -23,6 +23,9 @@ public class DashboardView extends JFrame {
             new NovaTransacaoView(usuario);
         });
         JButton btnVerTransacoes = new JButton("Ver Transações");
+        btnVerTransacoes.addActionListener(e ->{
+            new ListarTransacoesView(usuario);
+        });
         JButton btnSaldo = new JButton("Consultar Saldo");
         JButton btnLogout = new JButton("Logout");
 
