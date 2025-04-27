@@ -27,6 +27,9 @@ public class DashboardView extends JFrame {
             new ListarTransacoesView(usuario);
         });
         JButton btnSaldo = new JButton("Consultar Saldo");
+        btnSaldo.addActionListener(e ->{
+            new ConsultarSaldoView(usuario);
+        });
         JButton btnLogout = new JButton("Logout");
 
         JPanel painel = new JPanel();
