@@ -13,7 +13,10 @@ public class TransacaoDAO {
         String sql = "INSERT INTO transacoes (usuario_id, tipo, descricao, valor, data_transacao) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, t.getUsuarioId());
-            stmt.setString(2, t.getTipo());
+
+            String tipoFormatado = t.getTipo().toUpperCase().replace("Í", "I");
+            stmt.setString(2, tipoFormatado);
+
             stmt.setString(3, t.getDescricao());
             stmt.setDouble(4, t.getValor());
             stmt.setDate(5, Date.valueOf(t.getData_transacao()));
@@ -45,28 +48,23 @@ public class TransacaoDAO {
     }
 
     public double calcularSaldo(int usuarioId) throws SQLException {
-        String sql = "SELECT tipo, SUM(valor) FROM transacoes WHERE usuario_id = ? GROUP BY tipo";
-        PreparedStatement stmt = Conexao.conectar().prepareStatement(sql);
-        stmt.setInt(1, usuarioId);
-        ResultSet rs = stmt.executeQuery();
-
-        double entradas = 0;
-        double saidas = 0;
-
-        while (rs.next()) {
-            String tipo = rs.getString("tipo");
-            double total = rs.getDouble("sum");
-
-            if (tipo.equalsIgnoreCase("entrada")) {
-                entradas += total;
-            } else if (tipo.equalsIgnoreCase("saida")) {
-                saidas += total;
+        String sql = """
+        SELECT 
+            COALESCE(SUM(CASE WHEN UPPER(tipo) = 'ENTRADA' THEN valor ELSE 0 END), 0) -
+            COALESCE(SUM(CASE WHEN UPPER(tipo) = 'SAIDA' THEN valor ELSE 0 END), 0) AS saldo
+        FROM transacoes
+        WHERE usuario_id = ?
+    """;
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, usuarioId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getDouble("saldo");
             }
         }
-
-        rs.close();
-        stmt.close();
-
-        return entradas - saidas;
+        return 0;
     }
+
+
 }
