@@ -2,6 +2,7 @@ package view;
 
 import controller.TransacaoController;
 import model.Transacao;
+import model.TipoTransacao;
 import model.Usuario;
 import org.jdatepicker.impl.*;
 
@@ -48,7 +49,9 @@ public class NovaTransacaoView extends JFrame {
 
         btnSalvar.addActionListener(e -> {
             try {
-                String tipo = comboTipo.getSelectedItem().toString();
+                String tipoStr = comboTipo.getSelectedItem().toString().toUpperCase().replace("Í", "I");
+                TipoTransacao tipo = TipoTransacao.valueOf(tipoStr);
+
                 String descricao = txtDescricao.getText().trim();
                 String valorStr = txtValor.getText().trim();
                 Date selectedDate = (Date) datePicker.getModel().getValue();
@@ -88,6 +91,7 @@ public class NovaTransacaoView extends JFrame {
                 JOptionPane.showMessageDialog(this, "Erro ao cadastrar transação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
         });
+
 
 
         // Layout

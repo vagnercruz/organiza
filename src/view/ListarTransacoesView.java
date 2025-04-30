@@ -53,7 +53,7 @@ public class ListarTransacoesView extends JFrame {
         for (Transacao t : lista) {
             tableModel.addRow(new Object[]{
                     t.getData_transacao(),
-                    t.getTipo().toUpperCase(),
+                    t.getTipo().name(),
                     String.format("R$ %.2f", t.getValor()),
                     t.getDescricao()
             });

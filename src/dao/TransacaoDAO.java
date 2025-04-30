@@ -1,6 +1,7 @@
 package dao;
 
 import model.Transacao;
+import model.TipoTransacao;
 import util.Conexao;
 
 import java.sql.*;
@@ -13,10 +14,7 @@ public class TransacaoDAO {
         String sql = "INSERT INTO transacoes (usuario_id, tipo, descricao, valor, data_transacao) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, t.getUsuarioId());
-
-            String tipoFormatado = t.getTipo().toUpperCase().replace("Í", "I");
-            stmt.setString(2, tipoFormatado);
-
+            stmt.setString(2, t.getTipo().name()); // Usa o nome do enum
             stmt.setString(3, t.getDescricao());
             stmt.setDouble(4, t.getValor());
             stmt.setDate(5, Date.valueOf(t.getData_transacao()));
@@ -36,7 +34,7 @@ public class TransacaoDAO {
                 Transacao t = new Transacao();
                 t.setId(rs.getInt("id"));
                 t.setUsuarioId(rs.getInt("usuario_id"));
-                t.setTipo(rs.getString("tipo"));
+                t.setTipo(TipoTransacao.valueOf(rs.getString("tipo").toUpperCase())); // converte para enum
                 t.setDescricao(rs.getString("descricao"));
                 t.setValor(rs.getDouble("valor"));
                 t.setData_transacao(rs.getDate("data_transacao").toLocalDate());
@@ -49,12 +47,12 @@ public class TransacaoDAO {
 
     public double calcularSaldo(int usuarioId) throws SQLException {
         String sql = """
-        SELECT 
-            COALESCE(SUM(CASE WHEN UPPER(tipo) = 'ENTRADA' THEN valor ELSE 0 END), 0) -
-            COALESCE(SUM(CASE WHEN UPPER(tipo) = 'SAIDA' THEN valor ELSE 0 END), 0) AS saldo
-        FROM transacoes
-        WHERE usuario_id = ?
-    """;
+            SELECT 
+                COALESCE(SUM(CASE WHEN UPPER(tipo) = 'ENTRADA' THEN valor ELSE 0 END), 0) -
+                COALESCE(SUM(CASE WHEN UPPER(tipo) = 'SAIDA' THEN valor ELSE 0 END), 0) AS saldo
+            FROM transacoes
+            WHERE usuario_id = ?
+        """;
         try (Connection conn = Conexao.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, usuarioId);
@@ -65,6 +63,4 @@ public class TransacaoDAO {
         }
         return 0;
     }
-
-
 }

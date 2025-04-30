@@ -1,11 +1,13 @@
 package model;
 
 import java.time.LocalDate;
+import model.TipoTransacao;
+
 
 public class Transacao {
     private int id;
     private int usuarioId;
-    private String tipo;
+    private TipoTransacao tipo;
     private String descricao;
     private double valor;
     private LocalDate data_transacao;
@@ -22,8 +24,8 @@ public class Transacao {
     public String getDescricao() {return descricao;}
     public void setDescricao(String descricao) {this.descricao = descricao;}
 
-    public String getTipo() {return tipo;}
-    public void setTipo(String tipo) {this.tipo = tipo;}
+    public TipoTransacao getTipo() { return tipo; }
+    public void setTipo(TipoTransacao tipo) { this.tipo = tipo; }
 
     public int getUsuarioId() {return usuarioId;}
     public void setUsuarioId(int usuarioId) {this.usuarioId = usuarioId;}
