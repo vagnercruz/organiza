@@ -3,20 +3,17 @@ package view;
 import controller.TransacaoController;
 import model.Transacao;
 import model.Usuario;
+import org.jdatepicker.impl.*;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 public class RelatoriosView extends JFrame {
-
-    private JComboBox<String> filtroCombo;
-    private JTextField campoData;
-    private JTable tabela;
-    private DefaultTableModel modeloTabela;
-    private JLabel lblResumo;
 
     public RelatoriosView(Usuario usuario) {
         setTitle("Relatórios de Transações");
@@ -24,78 +21,102 @@ public class RelatoriosView extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Filtros
-        filtroCombo = new JComboBox<>(new String[]{"Dia", "Mês", "Ano"});
-        campoData = new JTextField(10); // Exemplo: "2024-04-01", "2024-04", "2024"
-        JButton btnGerar = new JButton("Gerar Relatório");
+        // Date Picker para data específica
+        JLabel lblData = new JLabel("Filtrar por data:");
+        UtilDateModel dateModel = new UtilDateModel();
+        Properties p = new Properties();
+        p.put("text.today", "Hoje");
+        p.put("text.month", "Mês");
+        p.put("text.year", "Ano");
+        JDatePanelImpl datePanel = new JDatePanelImpl(dateModel, p);
+        JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateComponentFormatter());
+        JButton btnBuscarData = new JButton("Buscar por data");
 
-        JPanel painelFiltros = new JPanel();
-        painelFiltros.add(new JLabel("Filtrar por:"));
-        painelFiltros.add(filtroCombo);
-        painelFiltros.add(new JLabel("Data:"));
-        painelFiltros.add(campoData);
-        painelFiltros.add(btnGerar);
+        // Campo de mês e ano
+        JLabel lblMesAno = new JLabel("Filtrar por mês e ano:");
+        JTextField txtMes = new JTextField(2);
+        JTextField txtAnoMes = new JTextField(4);
+        JButton btnBuscarMesAno = new JButton("Buscar por mês/ano");
 
-        // Tabela
-        modeloTabela = new DefaultTableModel(new Object[]{"Descrição", "Tipo", "Valor", "Data"}, 0);
-        tabela = new JTable(modeloTabela);
-        JScrollPane scroll = new JScrollPane(tabela);
+        // Campo de ano
+        JLabel lblAno = new JLabel("Filtrar por ano:");
+        JTextField txtAno = new JTextField(4);
+        JButton btnBuscarAno = new JButton("Buscar por ano");
 
-        // Resumo
-        lblResumo = new JLabel("Total de Entradas: R$0.00 | Saídas: R$0.00 | Saldo: R$0.00");
+        // Área de resultados
+        JTextArea areaResultados = new JTextArea();
+        areaResultados.setEditable(false);
+        JScrollPane scroll = new JScrollPane(areaResultados);
 
-        // Layout principal
-        setLayout(new BorderLayout());
-        add(painelFiltros, BorderLayout.NORTH);
-        add(scroll, BorderLayout.CENTER);
-        add(lblResumo, BorderLayout.SOUTH);
+        TransacaoController controller = new TransacaoController();
 
-        btnGerar.addActionListener(e -> {
+        // Ação: buscar por data específica
+        btnBuscarData.addActionListener(e -> {
             try {
-                gerarRelatorio(usuario.getId());
+                Date dataSelecionada = (Date) datePicker.getModel().getValue();
+                if (dataSelecionada == null) {
+                    JOptionPane.showMessageDialog(this, "Selecione uma data.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                LocalDate data = dataSelecionada.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                List<Transacao> transacoes = controller.listarPorData(usuario.getId(), data);
+                mostrarTransacoes(transacoes, areaResultados);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
+                mostrarErro(ex);
             }
         });
+
+        // Ação: buscar por mês e ano
+        btnBuscarMesAno.addActionListener(e -> {
+            try {
+                int mes = Integer.parseInt(txtMes.getText());
+                int ano = Integer.parseInt(txtAnoMes.getText());
+                List<Transacao> transacoes = controller.listarPorMesEAno(usuario.getId(), mes, ano);
+                mostrarTransacoes(transacoes, areaResultados);
+            } catch (Exception ex) {
+                mostrarErro(ex);
+            }
+        });
+
+        // Ação: buscar por ano
+        btnBuscarAno.addActionListener(e -> {
+            try {
+                int ano = Integer.parseInt(txtAno.getText());
+                List<Transacao> transacoes = controller.listarPorAno(usuario.getId(), ano);
+                mostrarTransacoes(transacoes, areaResultados);
+            } catch (Exception ex) {
+                mostrarErro(ex);
+            }
+        });
+
+        // Layout
+        JPanel painelFiltros = new JPanel(new GridLayout(4, 3, 5, 5));
+        painelFiltros.add(lblData); painelFiltros.add(datePicker); painelFiltros.add(btnBuscarData);
+        painelFiltros.add(lblMesAno); painelFiltros.add(new JPanel(new FlowLayout()) {{
+            add(new JLabel("Mês:")); add(txtMes); add(new JLabel("Ano:")); add(txtAnoMes);
+        }}); painelFiltros.add(btnBuscarMesAno);
+        painelFiltros.add(lblAno); painelFiltros.add(txtAno); painelFiltros.add(btnBuscarAno);
+
+        getContentPane().setLayout(new BorderLayout());
+        add(painelFiltros, BorderLayout.NORTH);
+        add(scroll, BorderLayout.CENTER);
 
         setVisible(true);
     }
 
-    private void gerarRelatorio(int usuarioId) throws Exception {
-        String tipoFiltro = filtroCombo.getSelectedItem().toString();
-        String valor = campoData.getText().trim();
-
-        TransacaoController controller = new TransacaoController();
-        List<Transacao> transacoes;
-
-        switch (tipoFiltro) {
-            case "Dia" -> transacoes = controller.listarPorDia(usuarioId, LocalDate.parse(valor));
-            case "Mês" -> transacoes = controller.listarPorMes(usuarioId, valor);
-            case "Ano" -> transacoes = controller.listarPorAno(usuarioId, Integer.parseInt(valor));
-            default -> throw new IllegalArgumentException("Filtro inválido");
+    private void mostrarTransacoes(List<Transacao> transacoes, JTextArea area) {
+        if (transacoes.isEmpty()) {
+            area.setText("Nenhuma transação encontrada para o filtro selecionado.");
+            return;
         }
-
-        modeloTabela.setRowCount(0); // Limpa a tabela
-        double totalEntradas = 0;
-        double totalSaidas = 0;
-
+        StringBuilder sb = new StringBuilder();
         for (Transacao t : transacoes) {
-            modeloTabela.addRow(new Object[]{
-                    t.getDescricao(),
-                    t.getTipo(),
-                    t.getValor(),
-                    t.getData_transacao()
-            });
-
-            if (t.getTipo().isEntrada()) {
-                totalEntradas += t.getValor();
-            } else {
-                totalSaidas += t.getValor();
-            }
+            sb.append(String.format("[%s] %s - %.2f (%s)%n", t.getData_transacao(), t.getDescricao(), t.getValor(), t.getTipo()));
         }
+        area.setText(sb.toString());
+    }
 
-        double saldo = totalEntradas - totalSaidas;
-        lblResumo.setText(String.format("Total de Entradas: R$%.2f | Saídas: R$%.2f | Saldo: R$%.2f",
-                totalEntradas, totalSaidas, saldo));
+    private void mostrarErro(Exception ex) {
+        JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
     }
 }

@@ -30,6 +30,12 @@ public class DashboardView extends JFrame {
         btnSaldo.addActionListener(e ->{
             new ConsultarSaldoView(usuario);
         });
+
+        JButton btnRelatorios = new JButton("Ver Relatórios");
+        btnRelatorios.addActionListener(e ->{
+            new RelatoriosView(usuario);
+        });
+
         JButton btnLogout = new JButton("Logout");
 
         JPanel painel = new JPanel();
@@ -38,6 +44,7 @@ public class DashboardView extends JFrame {
         painel.add(btnNovaTransacao);
         painel.add(btnVerTransacoes);
         painel.add(btnSaldo);
+        painel.add(btnRelatorios);
         painel.add(btnLogout);
 
         add(painel);

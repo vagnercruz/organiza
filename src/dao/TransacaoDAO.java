@@ -92,4 +92,70 @@ public class TransacaoDAO {
 
         return lista;
     }
+
+    public List<Transacao> listarPorData(int usuarioId, LocalDate data) throws SQLException {
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND data_transacao = ?";
+        List<Transacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, usuarioId);
+            stmt.setDate(2, Date.valueOf(data));
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Transacao t = construirTransacao(rs);
+                lista.add(t);
+            }
+        }
+
+        return lista;
+    }
+
+    public List<Transacao> listarPorMesEAno(int usuarioId, int mes, int ano) throws SQLException {
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND EXTRACT(MONTH FROM data_transacao) = ? AND EXTRACT(YEAR FROM data_transacao) = ?";
+        List<Transacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, usuarioId);
+            stmt.setInt(2, mes);
+            stmt.setInt(3, ano);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Transacao t = construirTransacao(rs);
+                lista.add(t);
+            }
+        }
+
+        return lista;
+    }
+
+    public List<Transacao> listarPorAno(int usuarioId, int ano) throws SQLException {
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND EXTRACT(YEAR FROM data_transacao) = ?";
+        List<Transacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, usuarioId);
+            stmt.setInt(2, ano);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Transacao t = construirTransacao(rs);
+                lista.add(t);
+            }
+        }
+
+        return lista;
+    }
+
+    private Transacao construirTransacao(ResultSet rs) throws SQLException {
+        Transacao t = new Transacao();
+        t.setId(rs.getInt("id"));
+        t.setUsuarioId(rs.getInt("usuario_id"));
+        t.setTipo(TipoTransacao.valueOf(rs.getString("tipo").toUpperCase()));
+        t.setDescricao(rs.getString("descricao"));
+        t.setValor(rs.getDouble("valor"));
+        t.setData_transacao(rs.getDate("data_transacao").toLocalDate());
+        return t;
+    }
 }
