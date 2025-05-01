@@ -24,9 +24,13 @@ public class Transacao {
     public String getDescricao() {return descricao;}
     public void setDescricao(String descricao) {this.descricao = descricao;}
 
-    public TipoTransacao getTipo() { return tipo; }
-    public void setTipo(TipoTransacao tipo) { this.tipo = tipo; }
+    public TipoTransacao getTipo() {
+        return tipo;
+    }
 
+    public void setTipo(TipoTransacao tipo) {
+        this.tipo = tipo;
+    }
     public int getUsuarioId() {return usuarioId;}
     public void setUsuarioId(int usuarioId) {this.usuarioId = usuarioId;}
 }

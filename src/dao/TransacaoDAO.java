@@ -7,6 +7,8 @@ import util.Conexao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
+
 
 public class TransacaoDAO {
 
@@ -62,5 +64,32 @@ public class TransacaoDAO {
             }
         }
         return 0;
+    }
+
+    public List<Transacao> listarPorPeriodo(int usuarioId, LocalDate inicio, LocalDate fim) throws SQLException {
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND data_transacao BETWEEN ? AND ? ORDER BY data_transacao";
+        List<Transacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, usuarioId);
+            stmt.setDate(2, Date.valueOf(inicio));
+            stmt.setDate(3, Date.valueOf(fim));
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Transacao t = new Transacao();
+                t.setId(rs.getInt("id"));
+                t.setUsuarioId(rs.getInt("usuario_id"));
+                t.setTipo(TipoTransacao.valueOf(rs.getString("tipo").toUpperCase()));
+                t.setDescricao(rs.getString("descricao"));
+                t.setValor(rs.getDouble("valor"));
+                t.setData_transacao(rs.getDate("data_transacao").toLocalDate());
+                lista.add(t);
+            }
+        }
+
+        return lista;
     }
 }

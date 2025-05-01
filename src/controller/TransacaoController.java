@@ -5,6 +5,7 @@ import model.Transacao;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.time.LocalDate;
 
 public class TransacaoController {
     private TransacaoDAO dao;
@@ -39,4 +40,10 @@ public class TransacaoController {
             return 0;
         }
     }
+
+    public List<Transacao> buscarPorPeriodo(int usuarioId, LocalDate inicio, LocalDate fim) throws SQLException {
+        TransacaoDAO dao = new TransacaoDAO();
+        return dao.listarPorPeriodo(usuarioId, inicio, fim);
+    }
+
 }
