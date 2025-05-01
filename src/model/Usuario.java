@@ -5,6 +5,7 @@ public class Usuario {
     private String nome;
     private String email;
     private String senha;
+    private String nomeUsuario;
 
     // getter setters
 
@@ -38,5 +39,13 @@ public class Usuario {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public String getNomeUsuario() {
+        return nomeUsuario;
+    }
+
+    public void setNomeUsuario(String nomeUsuario) {
+        this.nomeUsuario = nomeUsuario;
     }
 }

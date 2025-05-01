@@ -2,6 +2,7 @@ package dao;
 
 import model.Usuario;
 import util.Conexao;
+import util.Seguranca;
 
 import java.sql.*;
 
@@ -13,17 +14,18 @@ public class UsuarioDAO {
         try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, u.getNome());
             stmt.setString(2, u.getEmail());
-            stmt.setString(3, u.getSenha());
+            stmt.setString(2, Seguranca.hashSenha(u.getSenha()));
             stmt.executeUpdate();
         }
+
     }
 
-    public Usuario login(String email, String senha) throws SQLException {
-        String sql = "SELECT * FROM usuarios WHERE email = ? AND senha = ?";
+    public Usuario login(String nomeUsuario, String senha) throws SQLException {
+        String sql = "SELECT * FROM usuarios WHERE nome_usuario = ? AND senha = ?";
 
         try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, email);
-            stmt.setString(2, senha);
+            stmt.setString(1, nomeUsuario);
+            stmt.setString(2, Seguranca.hashSenha(senha));
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -32,6 +34,7 @@ public class UsuarioDAO {
                 u.setNome(rs.getString("nome"));
                 u.setEmail(rs.getString("email"));
                 u.setSenha(rs.getString("senha"));
+                u.setNomeUsuario(rs.getString("nome_usuario"));
                 return u;
             } else {
                 return null;

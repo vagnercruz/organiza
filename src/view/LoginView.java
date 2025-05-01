@@ -5,31 +5,28 @@ import model.Usuario;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class LoginView extends JFrame {
-    private JTextField emailField;
+    private JTextField usuarioField;
     private JPasswordField senhaField;
     private JButton loginButton;
     private JButton cadastrarButton;
 
     private UsuarioController usuarioController = new UsuarioController();
 
-    public LoginView(){
+    public LoginView() {
         setTitle("Login - Gestão Financeira");
         setSize(350, 200);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // layout
-
+        // Layout
         JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        panel.add(new JLabel("Email:"));
-        emailField = new JTextField();
-        panel.add(emailField);
+        panel.add(new JLabel("Usuário:"));
+        usuarioField = new JTextField();
+        panel.add(usuarioField);
 
         panel.add(new JLabel("Senha:"));
         senhaField = new JPasswordField();
@@ -44,23 +41,22 @@ public class LoginView extends JFrame {
         add(panel);
 
         // Ação do botão de "Entrar"
+        loginButton.addActionListener(e -> {
+            String nomeUsuario = usuarioField.getText().trim();
+            String senha = new String(senhaField.getPassword()).trim();
 
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String email = emailField.getText();
-                String senha = new String(senhaField.getPassword());
-                Usuario usuario = usuarioController.autenticar(email, senha);
-                if (usuario != null){
-                    JOptionPane.showMessageDialog(null, "Bem-vindo, " + usuario.getNome() + "!");
-                    dispose();
-                    new DashboardView(usuario);
-                }else{
-                    JOptionPane.showMessageDialog(null, "Email ou senha inválidos.");
-                }
+            Usuario usuario = usuarioController.autenticar(nomeUsuario, senha);
+
+            if (usuario != null) {
+                JOptionPane.showMessageDialog(null, "Bem-vindo, " + usuario.getNome() + "!");
+                dispose();
+                new DashboardView(usuario);
+            } else {
+                JOptionPane.showMessageDialog(null, "Usuário ou senha inválidos.");
             }
         });
 
+        // Ação do botão de "Cadastrar" (você pode substituir quando implementar)
         cadastrarButton.addActionListener(e -> {
             JOptionPane.showMessageDialog(null, "Cadastro ainda não implementado!");
         });
