@@ -9,12 +9,12 @@ import java.sql.*;
 public class UsuarioDAO {
 
     public void salvar(Usuario u) throws SQLException {
-        String sql = "INSERT INTO usuarios (nome, email, senha, nome_usuario) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO usuarios (nome, email, senha, nome_usuario) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, u.getNome());
             stmt.setString(2, u.getEmail());
-            stmt.setString(2, Seguranca.hashSenha(u.getSenha()));
+            stmt.setString(3, Seguranca.hashSenha(u.getSenha()));
             stmt.setString(4, u.getNomeUsuario());
             stmt.executeUpdate();
         }
