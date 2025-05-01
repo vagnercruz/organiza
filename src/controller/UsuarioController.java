@@ -6,19 +6,17 @@ import model.Usuario;
 public class UsuarioController {
     private UsuarioDAO dao = new UsuarioDAO();
 
-    public void cadastrar(String nome, String email, String senha){
-        Usuario u = new Usuario();
-        u.setNome(nome);
-        u.setEmail(email);
-        u.setSenha(senha);
-
-        try{
+    public boolean cadastrar(Usuario u) {
+        try {
             dao.salvar(u);
-            System.out.println("Usuário Cadastrado com sucesso!");
-        }catch (Exception e){
+            System.out.println("Usuário cadastrado com sucesso!");
+            return true;
+        } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
+
 
     public Usuario autenticar(String email, String senha){
         try{

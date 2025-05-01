@@ -58,7 +58,7 @@ public class LoginView extends JFrame {
 
         // Ação do botão de "Cadastrar" (você pode substituir quando implementar)
         cadastrarButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, "Cadastro ainda não implementado!");
+            new CadastroUsuarioView();
         });
 
         setVisible(true);
