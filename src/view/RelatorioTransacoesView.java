@@ -12,20 +12,30 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
-import java.util.Date;
+
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.*;
+
+import java.io.FileOutputStream;
 
 public class RelatorioTransacoesView extends JFrame {
 
     private DefaultTableModel tableModel;
     private JTable tabela;
     private JLabel lblTotais;
-    private List<Transacao> transacoesFiltradas; // guardamos aqui para exportar
+    private Usuario usuario;
+    private JDatePickerImpl pickerInicio;
+    private JDatePickerImpl pickerFim;
+    private List<Transacao> transacoes;
 
     public RelatorioTransacoesView(Usuario usuario) {
+        this.usuario = usuario;
+        this.transacoes = new ArrayList<>();
+
         setTitle("Relatório de Transações");
-        setSize(800, 500);
+        setSize(900, 550);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -35,23 +45,31 @@ public class RelatorioTransacoesView extends JFrame {
 
         JLabel lblInicio = new JLabel("Data Início:");
         UtilDateModel modelInicio = new UtilDateModel();
-        JDatePanelImpl datePanelInicio = new JDatePanelImpl(modelInicio, new Properties());
-        JDatePickerImpl pickerInicio = new JDatePickerImpl(datePanelInicio, new DateComponentFormatter());
+        pickerInicio = new JDatePickerImpl(new JDatePanelImpl(modelInicio, new Properties()), new DateComponentFormatter());
 
         JLabel lblFim = new JLabel("Data Fim:");
         UtilDateModel modelFim = new UtilDateModel();
-        JDatePanelImpl datePanelFim = new JDatePanelImpl(modelFim, new Properties());
-        JDatePickerImpl pickerFim = new JDatePickerImpl(datePanelFim, new DateComponentFormatter());
+        pickerFim = new JDatePickerImpl(new JDatePanelImpl(modelFim, new Properties()), new DateComponentFormatter());
 
         JButton btnFiltrar = new JButton("Filtrar");
-        JButton btnExportarCSV = new JButton("Exportar CSV");
 
         filtrosPanel.add(lblInicio);
         filtrosPanel.add(pickerInicio);
         filtrosPanel.add(lblFim);
         filtrosPanel.add(pickerFim);
         filtrosPanel.add(btnFiltrar);
-        filtrosPanel.add(btnExportarCSV);
+
+        // Botão exportar com menu suspenso
+        JButton btnExportar = new JButton("Exportar");
+        JPopupMenu exportarMenu = new JPopupMenu();
+        JMenuItem pdfItem = new JMenuItem("Exportar como PDF");
+        JMenuItem csvItem = new JMenuItem("Exportar como CSV");
+        JMenuItem xlsxItem = new JMenuItem("Exportar como XLSX (em breve)");
+        exportarMenu.add(pdfItem);
+        exportarMenu.add(csvItem);
+        exportarMenu.add(xlsxItem);
+        btnExportar.addActionListener(e -> exportarMenu.show(btnExportar, 0, btnExportar.getHeight()));
+        filtrosPanel.add(btnExportar);
 
         add(filtrosPanel, BorderLayout.NORTH);
 
@@ -59,88 +77,138 @@ public class RelatorioTransacoesView extends JFrame {
         String[] colunas = {"Tipo", "Descrição", "Valor", "Data"};
         tableModel = new DefaultTableModel(colunas, 0);
         tabela = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(tabela);
-        add(scrollPane, BorderLayout.CENTER);
+        add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         // Totais
         lblTotais = new JLabel("Entradas: R$ 0.00 | Saídas: R$ 0.00 | Saldo: R$ 0.00");
         lblTotais.setHorizontalAlignment(SwingConstants.CENTER);
         add(lblTotais, BorderLayout.SOUTH);
 
-        // Ação do botão de filtro
-        btnFiltrar.addActionListener(e -> {
-            try {
-                Date inicioDate = (Date) pickerInicio.getModel().getValue();
-                Date fimDate = (Date) pickerFim.getModel().getValue();
+        // Botão Filtrar
+        btnFiltrar.addActionListener(e -> filtrar());
 
-                if (inicioDate == null || fimDate == null) {
-                    JOptionPane.showMessageDialog(this, "Selecione as duas datas.", "Erro", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+        // Exportações
+        pdfItem.addActionListener(e -> exportarPDF());
+        csvItem.addActionListener(e -> exportarCSV());
 
-                LocalDate inicio = inicioDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                LocalDate fim = fimDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        setVisible(true);
+    }
 
-                TransacaoController controller = new TransacaoController();
-                transacoesFiltradas = controller.buscarPorPeriodo(usuario.getId(), inicio, fim);
+    private void filtrar() {
+        try {
+            Date inicioDate = (Date) pickerInicio.getModel().getValue();
+            Date fimDate = (Date) pickerFim.getModel().getValue();
 
-                // Limpar tabela
-                tableModel.setRowCount(0);
-                double entradas = 0, saidas = 0;
-
-                for (Transacao t : transacoesFiltradas) {
-                    tableModel.addRow(new Object[]{
-                            t.getTipo().name().toLowerCase(),
-                            t.getDescricao(),
-                            String.format("R$ %.2f", t.getValor()),
-                            t.getData_transacao()
-                    });
-
-                    if (t.getTipo().name().equalsIgnoreCase("ENTRADA")) {
-                        entradas += t.getValor();
-                    } else {
-                        saidas += t.getValor();
-                    }
-                }
-
-                double saldo = entradas - saidas;
-                lblTotais.setText(String.format("Entradas: R$ %.2f | Saídas: R$ %.2f | Saldo: R$ %.2f", entradas, saidas, saldo));
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Erro ao buscar transações: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-
-        // Ação do botão de exportar CSV
-        btnExportarCSV.addActionListener(e -> {
-            if (transacoesFiltradas == null || transacoesFiltradas.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Nenhuma transação para exportar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            if (inicioDate == null || fimDate == null) {
+                JOptionPane.showMessageDialog(this, "Selecione as duas datas.", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Salvar Relatório CSV");
-            int userSelection = fileChooser.showSaveDialog(this);
+            LocalDate inicio = inicioDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate fim = fimDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-            if (userSelection == JFileChooser.APPROVE_OPTION) {
-                try (FileWriter writer = new FileWriter(fileChooser.getSelectedFile() + ".csv")) {
-                    writer.write("Tipo,Descrição,Valor,Data\n");
-                    for (Transacao t : transacoesFiltradas) {
-                        writer.write(String.format("%s,%s,%.2f,%s\n",
-                                t.getTipo().name().toLowerCase(),
-                                t.getDescricao().replace(",", " "), // evitar quebrar CSV
-                                t.getValor(),
-                                t.getData_transacao()));
-                    }
-                    JOptionPane.showMessageDialog(this, "Relatório exportado com sucesso!");
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Erro ao exportar CSV: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            TransacaoController controller = new TransacaoController();
+            transacoes = controller.buscarPorPeriodo(usuario.getId(), inicio, fim);
+
+            // Limpar tabela
+            tableModel.setRowCount(0);
+            double entradas = 0, saidas = 0;
+
+            for (Transacao t : transacoes) {
+                tableModel.addRow(new Object[]{
+                        t.getTipo().name().toLowerCase(),
+                        t.getDescricao(),
+                        String.format("R$ %.2f", t.getValor()),
+                        t.getData_transacao()
+                });
+
+                if (t.getTipo().name().equalsIgnoreCase("ENTRADA")) {
+                    entradas += t.getValor();
+                } else {
+                    saidas += t.getValor();
                 }
             }
-        });
 
-        setVisible(true);
+            double saldo = entradas - saidas;
+            lblTotais.setText(String.format("Entradas: R$ %.2f | Saídas: R$ %.2f | Saldo: R$ %.2f", entradas, saidas, saldo));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao buscar transações: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void exportarCSV() {
+        if (transacoes == null || transacoes.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Não há dados para exportar.");
+            return;
+        }
+
+        try (FileWriter writer = new FileWriter("relatorio_transacoes.csv")) {
+            writer.append("Tipo,Descrição,Valor,Data\n");
+            for (Transacao t : transacoes) {
+                writer.append(t.getTipo().name().toLowerCase()).append(",");
+                writer.append(t.getDescricao()).append(",");
+                writer.append(String.format("R$ %.2f", t.getValor())).append(",");
+                writer.append(t.getData_transacao().toString()).append("\n");
+            }
+            writer.flush();
+            JOptionPane.showMessageDialog(this, "Arquivo CSV exportado com sucesso!");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao exportar CSV: " + ex.getMessage());
+        }
+    }
+
+    private void exportarPDF() {
+        if (transacoes == null || transacoes.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Não há dados para exportar.");
+            return;
+        }
+
+        try {
+            Document document = new Document(PageSize.A4);
+            PdfWriter.getInstance(document, new FileOutputStream("relatorio_transacoes.pdf"));
+            document.open();
+
+            document.add(new Paragraph("Relatório de Transações"));
+            document.add(new Paragraph("Usuário: " + usuario.getNome()));
+            document.add(new Paragraph(" "));
+
+            PdfPTable table = new PdfPTable(4);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2, 4, 2, 3});
+
+            table.addCell("Tipo");
+            table.addCell("Descrição");
+            table.addCell("Valor");
+            table.addCell("Data");
+
+            double entradas = 0, saidas = 0;
+
+            for (Transacao t : transacoes) {
+                table.addCell(t.getTipo().name().toLowerCase());
+                table.addCell(t.getDescricao());
+                table.addCell(String.format("R$ %.2f", t.getValor()));
+                table.addCell(t.getData_transacao().toString());
+
+                if (t.getTipo().name().equalsIgnoreCase("ENTRADA")) {
+                    entradas += t.getValor();
+                } else {
+                    saidas += t.getValor();
+                }
+            }
+
+            document.add(table);
+            document.add(new Paragraph(" "));
+            double saldo = entradas - saidas;
+            document.add(new Paragraph(String.format("Entradas: R$ %.2f | Saídas: R$ %.2f | Saldo: R$ %.2f", entradas, saidas, saldo)));
+
+            document.close();
+            JOptionPane.showMessageDialog(this, "Arquivo PDF exportado com sucesso!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao exportar PDF: " + e.getMessage());
+        }
     }
 }
