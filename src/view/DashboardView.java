@@ -33,7 +33,7 @@ public class DashboardView extends JFrame {
 
         JButton btnRelatorios = new JButton("Ver Relatórios");
         btnRelatorios.addActionListener(e ->{
-            new RelatoriosView(usuario);
+            new RelatorioTransacoesView(usuario);
         });
 
         JButton btnLogout = new JButton("Logout");
