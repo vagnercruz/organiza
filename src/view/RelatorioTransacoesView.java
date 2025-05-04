@@ -54,7 +54,7 @@ public class RelatorioTransacoesView extends JFrame {
         add(filtrosPanel, BorderLayout.NORTH);
 
         // Tabela
-        String[] colunas = {"Tipo", "Descrição", "Valor", "Data"};
+        String[] colunas = {"Data", "Tipo", "Valor", "Categoria", "Descrição"};
         DefaultTableModel tableModel = new DefaultTableModel(colunas, 0);
         JTable tabela = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(tabela);

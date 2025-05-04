@@ -16,11 +16,11 @@ public class NovaTransacaoView extends JFrame {
 
     public NovaTransacaoView(Usuario usuario) {
         setTitle("Nova Transação");
-        setSize(400, 300);
+        setSize(400, 350);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Tipo - Agora com JComboBox
+        // Tipo
         JLabel lblTipo = new JLabel("Tipo (entrada/saída): ");
         String[] tipos = {"entrada", "saída"};
         JComboBox<String> comboTipo = new JComboBox<>(tipos);
@@ -33,7 +33,12 @@ public class NovaTransacaoView extends JFrame {
         JLabel lblValor = new JLabel("Valor:");
         JTextField txtValor = new JTextField();
 
-        // Data - Agora com JDatePicker
+        // Categoria
+        JLabel lblCategoria = new JLabel("Categoria:");
+        String[] categorias = {"Salário", "Investimentos", "Moradia", "Alimentação", "Transporte", "Contas e Serviços", "Saúde", "Educação", "Lazer e Entretenimento", "Vestuário", "Cuidados Pessoais", "Dívidas", "Imprevistos", "Doações", "Transferências"};
+        JComboBox<String> comboCategoria = new JComboBox<>(categorias);
+
+        // Data
         JLabel lblData = new JLabel("Data:");
         UtilDateModel model = new UtilDateModel();
         Properties p = new Properties();
@@ -53,9 +58,10 @@ public class NovaTransacaoView extends JFrame {
 
                 String descricao = txtDescricao.getText().trim();
                 String valorStr = txtValor.getText().trim();
+                String categoria = comboCategoria.getSelectedItem().toString();
                 Date selectedDate = (Date) datePicker.getModel().getValue();
 
-                if (descricao.isEmpty() || valorStr.isEmpty() || selectedDate == null) {
+                if (descricao.isEmpty() || valorStr.isEmpty() || selectedDate == null || categoria == null) {
                     JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.", "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -79,6 +85,7 @@ public class NovaTransacaoView extends JFrame {
                 t.setTipo(tipo);
                 t.setDescricao(descricao);
                 t.setValor(valor);
+                t.setCategoria(categoria);  // <- Aqui usamos a categoria selecionada
                 t.setData_transacao(dataTransacao);
 
                 TransacaoController tc = new TransacaoController();
@@ -91,13 +98,12 @@ public class NovaTransacaoView extends JFrame {
             }
         });
 
-
-
         // Layout
-        setLayout(new GridLayout(5, 2, 5, 5));
+        setLayout(new GridLayout(6, 2, 5, 5));
         add(lblTipo); add(comboTipo);
         add(lblDescricao); add(txtDescricao);
         add(lblValor); add(txtValor);
+        add(lblCategoria); add(comboCategoria);
         add(lblData); add(datePicker);
         add(new JLabel()); add(btnSalvar);
 

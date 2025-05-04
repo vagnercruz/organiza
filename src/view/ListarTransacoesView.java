@@ -28,6 +28,7 @@ public class ListarTransacoesView extends JFrame {
         tableModel.addColumn("Data");
         tableModel.addColumn("Tipo");
         tableModel.addColumn("Valor");
+        tableModel.addColumn("Categoria");
         tableModel.addColumn("Descrição");
 
         table = new JTable(tableModel);
