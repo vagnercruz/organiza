@@ -56,6 +56,7 @@ public class ListarTransacoesView extends JFrame {
                     t.getData_transacao(),
                     t.getTipo().name(),
                     String.format("R$ %.2f", t.getValor()),
+                    t.getCategoria(),
                     t.getDescricao()
             });
         }

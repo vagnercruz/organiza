@@ -90,6 +90,7 @@ public class RelatorioTransacoesView extends JFrame {
                             t.getTipo().name().toLowerCase(),
                             t.getDescricao(),
                             String.format("R$ %.2f", t.getValor()),
+                            t.getCategoria(),
                             t.getData_transacao()
                     });
 
