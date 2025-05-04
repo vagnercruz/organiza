@@ -18,7 +18,6 @@ public class UsuarioDAO {
             stmt.setString(4, u.getNomeUsuario());
             stmt.executeUpdate();
         }
-
     }
 
     public Usuario login(String nomeUsuario, String senha) throws SQLException {

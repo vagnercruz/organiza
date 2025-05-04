@@ -2,7 +2,6 @@ package view;
 
 import controller.TransacaoController;
 import model.Transacao;
-import model.TipoTransacao;
 import model.Usuario;
 import org.jdatepicker.impl.*;
 
@@ -50,7 +49,7 @@ public class NovaTransacaoView extends JFrame {
         btnSalvar.addActionListener(e -> {
             try {
                 String tipoStr = comboTipo.getSelectedItem().toString().toUpperCase().replace("Í", "I");
-                TipoTransacao tipo = TipoTransacao.valueOf(tipoStr);
+                Transacao.Tipo tipo = Transacao.Tipo.valueOf(tipoStr);
 
                 String descricao = txtDescricao.getText().trim();
                 String valorStr = txtValor.getText().trim();
