@@ -168,4 +168,32 @@ public class TransacaoDAO {
         t.setCategoria(rs.getString("categoria"));
         return t;
     }
+
+    public List<Transacao> buscarUltimas(int usuarioId, int limite) throws SQLException {
+        List<Transacao> transacoes = new ArrayList<>();
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? ORDER BY data_transacao DESC LIMIT ?";
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, usuarioId);
+            stmt.setInt(2, limite);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Transacao t = new Transacao();
+                t.setId(rs.getInt("id"));
+                t.setUsuario_id(rs.getInt("usuario_id"));
+                t.setTipo(model.enums.TipoTransacao.valueOf(rs.getString("tipo")));
+                t.setValor(rs.getDouble("valor"));
+                t.setCategoria(rs.getString("categoria"));
+                t.setDescricao(rs.getString("descricao"));
+                t.setData_transacao(rs.getDate("data_transacao").toLocalDate());
+                transacoes.add(t);
+            }
+        }
+
+        return transacoes;
+    }
+
 }

@@ -71,4 +71,13 @@ public class TransacaoController {
             return Collections.emptyMap();
         }
     }
+
+    public List<Transacao> buscarUltimas(int usuarioId, int limite) {
+        try {
+            return dao.buscarUltimas(usuarioId, limite);
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar últimas transações: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
 }
