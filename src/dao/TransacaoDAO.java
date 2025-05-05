@@ -15,7 +15,6 @@ import java.sql.SQLException;
 
 import java.time.LocalDate;
 
-
 public class TransacaoDAO {
 
     public void salvar(Transacao t) throws SQLException {
@@ -173,7 +172,7 @@ public class TransacaoDAO {
         List<Transacao> transacoes = new ArrayList<>();
         String sql = "SELECT * FROM transacoes WHERE usuario_id = ? ORDER BY data_transacao DESC LIMIT ?";
 
-        try (Connection conn = Conexao.getConnection();
+        try (Connection conn = Conexao.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, usuarioId);
@@ -183,8 +182,8 @@ public class TransacaoDAO {
             while (rs.next()) {
                 Transacao t = new Transacao();
                 t.setId(rs.getInt("id"));
-                t.setUsuario_id(rs.getInt("usuario_id"));
-                t.setTipo(model.enums.TipoTransacao.valueOf(rs.getString("tipo")));
+                t.setUsuarioId(rs.getInt("usuario_id")); // ✅ corrigido
+                t.setTipo(Transacao.Tipo.valueOf(rs.getString("tipo"))); // ✅ corrigido
                 t.setValor(rs.getDouble("valor"));
                 t.setCategoria(rs.getString("categoria"));
                 t.setDescricao(rs.getString("descricao"));
@@ -195,5 +194,4 @@ public class TransacaoDAO {
 
         return transacoes;
     }
-
 }

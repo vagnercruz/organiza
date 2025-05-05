@@ -14,6 +14,7 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.sql.SQLException;
 
 public class DashboardView extends JFrame {
     private Usuario usuario;
@@ -86,16 +87,27 @@ public class DashboardView extends JFrame {
     }
 
     private void carregarTotais(JLabel lblTotais) {
-        List<Transacao> transacoes = controller.buscarPorPeriodo(usuario.getId(), LocalDate.now().withDayOfMonth(1), LocalDate.now());
-        double entradas = 0, saidas = 0;
+        try {
+            List<Transacao> transacoes = controller.buscarPorPeriodo(
+                    usuario.getId(),
+                    LocalDate.now().withDayOfMonth(1),
+                    LocalDate.now()
+            );
+            double entradas = 0, saidas = 0;
 
-        for (Transacao t : transacoes) {
-            if (t.getTipo().name().equalsIgnoreCase("ENTRADA")) entradas += t.getValor();
-            else saidas += t.getValor();
+            for (Transacao t : transacoes) {
+                if (t.getTipo().name().equalsIgnoreCase("ENTRADA")) entradas += t.getValor();
+                else saidas += t.getValor();
+            }
+
+            double saldo = entradas - saidas;
+            lblTotais.setText(String.format("Entradas: R$ %.2f | Saídas: R$ %.2f | Saldo: R$ %.2f", entradas, saidas, saldo));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            lblTotais.setText("Erro ao carregar totais");
         }
-        double saldo = entradas - saidas;
-        lblTotais.setText(String.format("Entradas: R$ %.2f | Saídas: R$ %.2f | Saldo: R$ %.2f", entradas, saidas, saldo));
     }
+
 
     private void carregarGrafico(DefaultPieDataset dataset) {
         Map<String, Double> categorias = controller.agruparPorCategoria(usuario.getId(),
@@ -112,7 +124,7 @@ public class DashboardView extends JFrame {
                     t.getData_transacao(),
                     t.getTipo().name(),
                     String.format("R$ %.2f", t.getValor()),
-                    t.getCategoria() != null ? t.getCategoria().getNome() : "Não categorizado",
+                    t.getCategoria() != null ? t.getCategoria() : "Não categorizado",
                     t.getDescricao()
             });
         }
