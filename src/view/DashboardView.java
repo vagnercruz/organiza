@@ -20,7 +20,7 @@ public class DashboardView extends JFrame {
     private Usuario usuario;
     private TransacaoController controller = new TransacaoController();
 
-    public DashboardView(Usuario usuario){
+    public DashboardView(Usuario usuario) {
         this.usuario = usuario;
 
         setTitle("Painel Principal");
@@ -48,10 +48,14 @@ public class DashboardView extends JFrame {
         ChartPanel chartPanel = new ChartPanel(chart);
         centroPanel.add(chartPanel);
 
-        // Tabela últimas transações
-        String[] colunas = {"Data", "Tipo", "Valor", "Categoria", "Descrição"};
+        // Tabela últimas transações com coluna de observações
+        String[] colunas = {"Data", "Tipo", "Valor", "Categoria", "Descrição", "Observações"};
         DefaultTableModel tableModel = new DefaultTableModel(colunas, 0);
         JTable tabela = new JTable(tableModel);
+        tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        tabela.setRowHeight(25);
+        tabela.getColumnModel().getColumn(5).setPreferredWidth(200); // Observações
+
         JScrollPane scrollPane = new JScrollPane(tabela);
         centroPanel.add(scrollPane);
 
@@ -108,10 +112,12 @@ public class DashboardView extends JFrame {
         }
     }
 
-
     private void carregarGrafico(DefaultPieDataset dataset) {
-        Map<String, Double> categorias = controller.agruparPorCategoria(usuario.getId(),
-                LocalDate.now().withDayOfMonth(1), LocalDate.now());
+        Map<String, Double> categorias = controller.agruparPorCategoria(
+                usuario.getId(),
+                LocalDate.now().withDayOfMonth(1),
+                LocalDate.now()
+        );
         dataset.clear();
         categorias.forEach(dataset::setValue);
     }
@@ -125,7 +131,8 @@ public class DashboardView extends JFrame {
                     t.getTipo().name(),
                     String.format("R$ %.2f", t.getValor()),
                     t.getCategoria() != null ? t.getCategoria() : "Não categorizado",
-                    t.getDescricao()
+                    t.getDescricao(),
+                    t.getObservacao() != null ? t.getObservacao() : ""
             });
         }
     }

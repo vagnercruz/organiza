@@ -30,6 +30,7 @@ public class ListarTransacoesView extends JFrame {
         tableModel.addColumn("Valor");
         tableModel.addColumn("Categoria");
         tableModel.addColumn("Descrição");
+        tableModel.addColumn("Observações");
 
         table = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(table);
@@ -57,7 +58,8 @@ public class ListarTransacoesView extends JFrame {
                     t.getTipo().name(),
                     String.format("R$ %.2f", t.getValor()),
                     t.getCategoria(),
-                    t.getDescricao()
+                    t.getDescricao(),
+                    t.getObservacao()
             });
         }
     }

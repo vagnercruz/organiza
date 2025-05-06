@@ -18,7 +18,8 @@ import java.time.LocalDate;
 public class TransacaoDAO {
 
     public void salvar(Transacao t) throws SQLException {
-        String sql = "INSERT INTO transacoes (usuario_id, tipo, descricao, valor, data_transacao, categoria) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO transacoes (usuario_id, tipo, descricao, valor, data_transacao, categoria, observacao, recorrente, frequencia) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, t.getUsuarioId());
@@ -27,6 +28,9 @@ public class TransacaoDAO {
             stmt.setDouble(4, t.getValor());
             stmt.setDate(5, java.sql.Date.valueOf(t.getData_transacao()));
             stmt.setString(6, t.getCategoria());
+            stmt.setString(7, t.getObservacao());
+            stmt.setBoolean(8, t.isRecorrente());
+            stmt.setString(9, t.getFrequencia());
             stmt.executeUpdate();
         }
     }
@@ -83,13 +87,13 @@ public class TransacaoDAO {
     }
 
     public List<Transacao> listarPorMesEAno(int usuarioId, int mes, int ano) throws SQLException {
-        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND MONTH(data_transacao) = ? AND YEAR(data_transacao) = ?";
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND strftime('%m', data_transacao) = ? AND strftime('%Y', data_transacao) = ?";
         List<Transacao> lista = new ArrayList<>();
 
         try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, usuarioId);
-            stmt.setInt(2, mes);
-            stmt.setInt(3, ano);
+            stmt.setString(2, String.format("%02d", mes));
+            stmt.setString(3, String.valueOf(ano));
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -101,12 +105,12 @@ public class TransacaoDAO {
     }
 
     public List<Transacao> listarPorAno(int usuarioId, int ano) throws SQLException {
-        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND YEAR(data_transacao) = ?";
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND strftime('%Y', data_transacao) = ?";
         List<Transacao> lista = new ArrayList<>();
 
         try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, usuarioId);
-            stmt.setInt(2, ano);
+            stmt.setString(2, String.valueOf(ano));
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -165,6 +169,9 @@ public class TransacaoDAO {
         t.setValor(rs.getDouble("valor"));
         t.setData_transacao(rs.getDate("data_transacao").toLocalDate());
         t.setCategoria(rs.getString("categoria"));
+        t.setObservacao(rs.getString("observacao"));
+        t.setRecorrente(rs.getBoolean("recorrente"));
+        t.setFrequencia(rs.getString("frequencia"));
         return t;
     }
 
@@ -180,15 +187,7 @@ public class TransacaoDAO {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                Transacao t = new Transacao();
-                t.setId(rs.getInt("id"));
-                t.setUsuarioId(rs.getInt("usuario_id")); // ✅ corrigido
-                t.setTipo(Transacao.Tipo.valueOf(rs.getString("tipo"))); // ✅ corrigido
-                t.setValor(rs.getDouble("valor"));
-                t.setCategoria(rs.getString("categoria"));
-                t.setDescricao(rs.getString("descricao"));
-                t.setData_transacao(rs.getDate("data_transacao").toLocalDate());
-                transacoes.add(t);
+                transacoes.add(mapearTransacao(rs));
             }
         }
 

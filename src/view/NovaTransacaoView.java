@@ -16,7 +16,7 @@ public class NovaTransacaoView extends JFrame {
 
     public NovaTransacaoView(Usuario usuario) {
         setTitle("Nova Transação");
-        setSize(400, 350);
+        setSize(450, 500); // aumento do tamanho para comportar os novos campos
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -48,6 +48,20 @@ public class NovaTransacaoView extends JFrame {
         JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
         JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateComponentFormatter());
 
+        // Observação
+        JLabel lblObservacao = new JLabel("Observações:");
+        JTextArea txtObservacao = new JTextArea(3, 20);
+        JScrollPane scrollObservacao = new JScrollPane(txtObservacao);
+
+        // Recorrência
+        JCheckBox chkRecorrente = new JCheckBox("Transação recorrente");
+        JLabel lblFrequencia = new JLabel("Frequência:");
+        String[] opcoesFrequencia = {"Diária", "Semanal", "Mensal"};
+        JComboBox<String> comboFrequencia = new JComboBox<>(opcoesFrequencia);
+        comboFrequencia.setEnabled(false); // só habilita se marcada a recorrência
+
+        chkRecorrente.addActionListener(e -> comboFrequencia.setEnabled(chkRecorrente.isSelected()));
+
         // Botão Salvar
         JButton btnSalvar = new JButton("Salvar");
 
@@ -60,6 +74,7 @@ public class NovaTransacaoView extends JFrame {
                 String valorStr = txtValor.getText().trim();
                 String categoria = comboCategoria.getSelectedItem().toString();
                 Date selectedDate = (Date) datePicker.getModel().getValue();
+                String observacao = txtObservacao.getText().trim();
 
                 if (descricao.isEmpty() || valorStr.isEmpty() || selectedDate == null || categoria == null) {
                     JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -85,8 +100,15 @@ public class NovaTransacaoView extends JFrame {
                 t.setTipo(tipo);
                 t.setDescricao(descricao);
                 t.setValor(valor);
-                t.setCategoria(categoria);  // <- Aqui usamos a categoria selecionada
+                t.setCategoria(categoria);
                 t.setData_transacao(dataTransacao);
+                t.setObservacao(observacao);
+
+                // Recorrência
+                t.setRecorrente(chkRecorrente.isSelected());
+                if (chkRecorrente.isSelected()) {
+                    t.setFrequencia(comboFrequencia.getSelectedItem().toString());
+                }
 
                 TransacaoController tc = new TransacaoController();
                 tc.cadastrar(t);
@@ -99,12 +121,15 @@ public class NovaTransacaoView extends JFrame {
         });
 
         // Layout
-        setLayout(new GridLayout(6, 2, 5, 5));
+        setLayout(new GridLayout(10, 2, 5, 5));
         add(lblTipo); add(comboTipo);
         add(lblDescricao); add(txtDescricao);
         add(lblValor); add(txtValor);
         add(lblCategoria); add(comboCategoria);
         add(lblData); add(datePicker);
+        add(lblObservacao); add(scrollObservacao);
+        add(chkRecorrente); add(new JLabel());
+        add(lblFrequencia); add(comboFrequencia);
         add(new JLabel()); add(btnSalvar);
 
         setVisible(true);

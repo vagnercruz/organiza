@@ -10,6 +10,9 @@ public class Transacao {
     private double valor;
     private LocalDate data_transacao;
     private String categoria;
+    private String observacao;
+    private boolean recorrente;
+    private String frequencia;
 
     public enum Tipo {
         ENTRADA, SAIDA
@@ -70,5 +73,29 @@ public class Transacao {
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
+    }
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
+    }
+
+
+    public boolean isRecorrente() {
+        return recorrente;
+    }
+
+    public void setRecorrente(boolean recorrente) {
+        this.recorrente = recorrente;
+    }
+
+    public String getFrequencia() {
+        return frequencia;
+    }
+
+    public void setFrequencia(String frequencia) {
+        this.frequencia = frequencia;
     }
 }
