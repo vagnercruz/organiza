@@ -193,4 +193,14 @@ public class TransacaoDAO {
 
         return transacoes;
     }
+
+    public void excluir(int id) throws SQLException {
+        String sql = "DELETE FROM transacoes WHERE id = ?";
+
+        try (Connection conn = Conexao.conectar(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
 }

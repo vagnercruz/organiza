@@ -67,6 +67,9 @@ public class DashboardView extends JFrame {
         JButton btnVerTransacoes = new JButton("Ver Transações");
         JButton btnSaldo = new JButton("Consultar Saldo");
         JButton btnRelatorios = new JButton("Ver Relatórios");
+        JButton btnExcluir = new JButton("Excluir Transação");
+        btnExcluir.addActionListener(e -> new ExcluirTransacaoView(usuario));
+        botoesPanel.add(btnExcluir);
         JButton btnLogout = new JButton("Logout");
 
         btnNovaTransacao.addActionListener(e -> new NovaTransacaoView(usuario));

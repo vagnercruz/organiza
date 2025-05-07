@@ -80,4 +80,14 @@ public class TransacaoController {
             return Collections.emptyList();
         }
     }
+
+    public List<Transacao> buscarPorUsuario(int usuarioId) throws SQLException {
+        TransacaoDAO dao = new TransacaoDAO();
+        return dao.listarPorUsuario(usuarioId);
+    }
+
+    public void excluir(int id) throws Exception {
+        TransacaoDAO dao = new TransacaoDAO();
+        dao.excluir(id);
+    }
 }
