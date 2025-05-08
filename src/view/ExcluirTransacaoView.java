@@ -26,16 +26,20 @@ public class ExcluirTransacaoView extends JFrame {
 
         // Carrega transações
         TransacaoController controller = new TransacaoController();
-        List<Transacao> transacoes = controller.buscarPorUsuario(usuario.getId());
-        for (Transacao t : transacoes) {
-            model.addRow(new Object[]{
-                    t.getId(),
-                    t.getData_transacao(),
-                    t.getTipo().name(),
-                    String.format("R$ %.2f", t.getValor()),
-                    t.getCategoria(),
-                    t.getDescricao()
-            });
+        try {
+            List<Transacao> transacoes = controller.buscarPorUsuario(usuario.getId());
+            for (Transacao t : transacoes) {
+                model.addRow(new Object[]{
+                        t.getId(),
+                        t.getData_transacao(),
+                        t.getTipo().name(),
+                        String.format("R$ %.2f", t.getValor()),
+                        t.getCategoria(),
+                        t.getDescricao()
+                });
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar transações: " + ex.getMessage());
         }
 
         btnExcluir.addActionListener(e -> {
