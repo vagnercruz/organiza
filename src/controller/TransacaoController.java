@@ -1,19 +1,19 @@
 package controller;
 
+import dao.TransacaoDAO;
 import model.Transacao;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.time.LocalDate;
 import java.util.Map;
-import dao.TransacaoDAO;
 
 public class TransacaoController {
-    private TransacaoDAO dao;
+    private final TransacaoDAO dao;
 
     public TransacaoController() {
-        dao = new TransacaoDAO();
+        this.dao = new TransacaoDAO();
     }
 
     public void cadastrar(Transacao t) {
@@ -25,12 +25,12 @@ public class TransacaoController {
         }
     }
 
-    public List<Transacao> Listar(int usuarioId) {
+    public List<Transacao> listar(int usuarioId) {
         try {
             return dao.listarPorUsuario(usuarioId);
         } catch (SQLException e) {
             System.err.println("Erro ao listar transações: " + e.getMessage());
-            return null;
+            return Collections.emptyList();
         }
     }
 
@@ -43,24 +43,40 @@ public class TransacaoController {
         }
     }
 
-    public List<Transacao> buscarPorPeriodo(int usuarioId, LocalDate inicio, LocalDate fim) throws SQLException {
-        TransacaoDAO dao = new TransacaoDAO();
-        return dao.listarPorPeriodo(usuarioId, inicio, fim);
+    public List<Transacao> buscarPorPeriodo(int usuarioId, LocalDate inicio, LocalDate fim) {
+        try {
+            return dao.listarPorPeriodo(usuarioId, inicio, fim);
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar por período: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
-    public List<Transacao> listarPorData(int usuarioId, LocalDate data) throws Exception {
-        TransacaoDAO dao = new TransacaoDAO();
-        return dao.listarPorData(usuarioId, data);
+    public List<Transacao> listarPorData(int usuarioId, LocalDate data) {
+        try {
+            return dao.listarPorData(usuarioId, data);
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar por data: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
-    public List<Transacao> listarPorMesEAno(int usuarioId, int mes, int ano) throws Exception {
-        TransacaoDAO dao = new TransacaoDAO();
-        return dao.listarPorMesEAno(usuarioId, mes, ano);
+    public List<Transacao> listarPorMesEAno(int usuarioId, int mes, int ano) {
+        try {
+            return dao.listarPorMesEAno(usuarioId, mes, ano);
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar por mês e ano: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
-    public List<Transacao> listarPorAno(int usuarioId, int ano) throws Exception {
-        TransacaoDAO dao = new TransacaoDAO();
-        return dao.listarPorAno(usuarioId, ano);
+    public List<Transacao> listarPorAno(int usuarioId, int ano) {
+        try {
+            return dao.listarPorAno(usuarioId, ano);
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar por ano: " + e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public Map<String, Double> agruparPorCategoria(int usuarioId, LocalDate inicio, LocalDate fim) {
@@ -81,13 +97,12 @@ public class TransacaoController {
         }
     }
 
-    public List<Transacao> buscarPorUsuario(int usuarioId) throws SQLException {
-        TransacaoDAO dao = new TransacaoDAO();
-        return dao.listarPorUsuario(usuarioId);
-    }
-
-    public void excluir(int id) throws Exception {
-        TransacaoDAO dao = new TransacaoDAO();
-        dao.excluir(id);
+    public void excluir(int id) {
+        try {
+            dao.excluir(id);
+            System.out.println("Transação excluída com sucesso!");
+        } catch (SQLException e) {
+            System.err.println("Erro ao excluir transação: " + e.getMessage());
+        }
     }
 }

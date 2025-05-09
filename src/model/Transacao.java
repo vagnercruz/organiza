@@ -13,6 +13,7 @@ public class Transacao {
     private String observacao;
     private boolean recorrente;
     private String frequencia;
+    private int contaId;
 
     public enum Tipo {
         ENTRADA, SAIDA
@@ -97,5 +98,13 @@ public class Transacao {
 
     public void setFrequencia(String frequencia) {
         this.frequencia = frequencia;
+    }
+
+    public int getContaId() {
+        return contaId;
+    }
+
+    public void setContaId(int contaId) {
+        this.contaId = contaId;
     }
 }
