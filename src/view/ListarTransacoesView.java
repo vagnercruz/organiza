@@ -70,7 +70,7 @@ public class ListarTransacoesView extends JFrame {
 
     private void carregarTransacoes() {
         tableModel.setRowCount(0); // Limpa a tabela
-        List<Transacao> lista = transacaoController.Listar(usuario.getId());
+        List<Transacao> lista = transacaoController.listar(usuario.getId());
         for (Transacao t : lista) {
             String nomeConta = contasMap.getOrDefault(t.getContaId(), "N/A");
             tableModel.addRow(new Object[]{

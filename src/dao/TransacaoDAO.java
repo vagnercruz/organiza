@@ -8,7 +8,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TransacaoDAO {
 
@@ -29,7 +32,7 @@ public class TransacaoDAO {
             stmt.setDouble(4, t.getValor());
             stmt.setDate(5, java.sql.Date.valueOf(t.getData_transacao()));
             stmt.setString(6, t.getCategoria());
-            stmt.setInt(7, t.getContaId());              // agora como int
+            stmt.setInt(7, t.getContaId());
             stmt.setString(8, t.getObservacao());
             stmt.setBoolean(9, t.isRecorrente());
             stmt.setString(10, t.getFrequencia());
@@ -56,7 +59,83 @@ public class TransacaoDAO {
         return lista;
     }
 
-    // ... métodos listarPorPeriodo, listarPorData, listarPorMesEAno, listarPorAno (sem alteração) ...
+    public List<Transacao> listarPorPeriodo(int usuarioId, LocalDate inicio, LocalDate fim) throws SQLException {
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND data_transacao BETWEEN ? AND ?";
+        List<Transacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, usuarioId);
+            stmt.setDate(2, java.sql.Date.valueOf(inicio));
+            stmt.setDate(3, java.sql.Date.valueOf(fim));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearTransacao(rs));
+                }
+            }
+        }
+
+        return lista;
+    }
+
+    public List<Transacao> listarPorData(int usuarioId, LocalDate data) throws SQLException {
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND data_transacao = ?";
+        List<Transacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, usuarioId);
+            stmt.setDate(2, java.sql.Date.valueOf(data));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearTransacao(rs));
+                }
+            }
+        }
+
+        return lista;
+    }
+
+    public List<Transacao> listarPorMesEAno(int usuarioId, int mes, int ano) throws SQLException {
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND EXTRACT(MONTH FROM data_transacao) = ? AND EXTRACT(YEAR FROM data_transacao) = ?";
+        List<Transacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, usuarioId);
+            stmt.setInt(2, mes);
+            stmt.setInt(3, ano);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearTransacao(rs));
+                }
+            }
+        }
+
+        return lista;
+    }
+
+    public List<Transacao> listarPorAno(int usuarioId, int ano) throws SQLException {
+        String sql = "SELECT * FROM transacoes WHERE usuario_id = ? AND EXTRACT(YEAR FROM data_transacao) = ?";
+        List<Transacao> lista = new ArrayList<>();
+
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, usuarioId);
+            stmt.setInt(2, ano);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapearTransacao(rs));
+                }
+            }
+        }
+
+        return lista;
+    }
 
     public double calcularSaldo(int usuarioId) throws SQLException {
         String sql = "SELECT tipo, valor FROM transacoes WHERE usuario_id = ?";
@@ -81,9 +160,9 @@ public class TransacaoDAO {
     public Map<String, Double> agruparPorCategoria(int usuarioId, LocalDate inicio, LocalDate fim) throws SQLException {
         String sql = """
             SELECT categoria, SUM(valor) AS total
-            FROM transacoes
-            WHERE usuario_id = ? AND data_transacao BETWEEN ? AND ?
-            GROUP BY categoria
+              FROM transacoes
+             WHERE usuario_id = ? AND data_transacao BETWEEN ? AND ?
+             GROUP BY categoria
         """;
         Map<String, Double> resultado = new HashMap<>();
 
@@ -93,7 +172,6 @@ public class TransacaoDAO {
             stmt.setInt(1, usuarioId);
             stmt.setDate(2, java.sql.Date.valueOf(inicio));
             stmt.setDate(3, java.sql.Date.valueOf(fim));
-
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     resultado.put(rs.getString("categoria"), rs.getDouble("total"));
@@ -113,7 +191,7 @@ public class TransacaoDAO {
         t.setValor(rs.getDouble("valor"));
         t.setData_transacao(rs.getDate("data_transacao").toLocalDate());
         t.setCategoria(rs.getString("categoria"));
-        t.setContaId(rs.getInt("conta_id"));           // agora mapeamos contaId
+        t.setContaId(rs.getInt("conta_id"));
         t.setObservacao(rs.getString("observacao"));
         t.setRecorrente(rs.getBoolean("recorrente"));
         t.setFrequencia(rs.getString("frequencia"));

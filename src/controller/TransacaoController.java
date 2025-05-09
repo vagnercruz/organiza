@@ -34,6 +34,15 @@ public class TransacaoController {
         }
     }
 
+    public List<Transacao> buscarPorUsuario(int usuarioId) {
+        try {
+            return dao.listarPorUsuario(usuarioId);
+        } catch (SQLException e) {
+            System.err.println("Erro ao buscar transações por usuário: " + e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
     public double consultarSaldo(int usuarioId) {
         try {
             return dao.calcularSaldo(usuarioId);

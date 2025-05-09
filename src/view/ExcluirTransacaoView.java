@@ -4,8 +4,6 @@ import controller.TransacaoController;
 import model.Transacao;
 import model.Usuario;
 
-
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -26,7 +24,6 @@ public class ExcluirTransacaoView extends JFrame {
 
         JButton btnExcluir = new JButton("Excluir Selecionada");
 
-        // Carrega transações
         TransacaoController controller = new TransacaoController();
         try {
             List<Transacao> transacoes = controller.buscarPorUsuario(usuario.getId());
