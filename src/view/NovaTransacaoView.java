@@ -1,6 +1,8 @@
 package view;
 
 import controller.TransacaoController;
+import dao.ContaDAO;
+import model.Conta;
 import model.Transacao;
 import model.Usuario;
 import org.jdatepicker.impl.*;
@@ -9,21 +11,34 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Properties;
-import java.util.Date;
+import java.util.*;
 
 public class NovaTransacaoView extends JFrame {
 
     public NovaTransacaoView(Usuario usuario) {
         setTitle("Nova Transação");
-        setSize(450, 500); // aumento do tamanho para comportar os novos campos
+        setSize(500, 520);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        // Layout base
+        setLayout(new GridLayout(11, 2, 5, 5));
 
         // Tipo
         JLabel lblTipo = new JLabel("Tipo (entrada/saída): ");
         String[] tipos = {"entrada", "saída"};
         JComboBox<String> comboTipo = new JComboBox<>(tipos);
+
+        // Conta
+        JLabel lblConta = new JLabel("Conta:");
+        JComboBox<String> comboContas = new JComboBox<>();
+        Map<String, Integer> contasMap = new HashMap<>();
+
+        List<Conta> listaContasDoUsuario = new ContaDAO().listarPorUsuario(usuario.getId());
+        for (Conta conta : listaContasDoUsuario) {
+            comboContas.addItem(conta.getNome());
+            contasMap.put(conta.getNome(), conta.getId());
+        }
 
         // Descrição
         JLabel lblDescricao = new JLabel("Descrição:");
@@ -35,7 +50,11 @@ public class NovaTransacaoView extends JFrame {
 
         // Categoria
         JLabel lblCategoria = new JLabel("Categoria:");
-        String[] categorias = {"Salário", "Investimentos", "Moradia", "Alimentação", "Transporte", "Contas e Serviços", "Saúde", "Educação", "Lazer e Entretenimento", "Vestuário", "Cuidados Pessoais", "Dívidas", "Imprevistos", "Doações", "Transferências"};
+        String[] categorias = {
+                "Salário", "Investimentos", "Moradia", "Alimentação", "Transporte", "Contas e Serviços",
+                "Saúde", "Educação", "Lazer e Entretenimento", "Vestuário", "Cuidados Pessoais",
+                "Dívidas", "Imprevistos", "Doações", "Transferências"
+        };
         JComboBox<String> comboCategoria = new JComboBox<>(categorias);
 
         // Data
@@ -48,7 +67,7 @@ public class NovaTransacaoView extends JFrame {
         JDatePanelImpl datePanel = new JDatePanelImpl(model, p);
         JDatePickerImpl datePicker = new JDatePickerImpl(datePanel, new DateComponentFormatter());
 
-        // Observação
+        // Observações
         JLabel lblObservacao = new JLabel("Observações:");
         JTextArea txtObservacao = new JTextArea(3, 20);
         JScrollPane scrollObservacao = new JScrollPane(txtObservacao);
@@ -58,7 +77,7 @@ public class NovaTransacaoView extends JFrame {
         JLabel lblFrequencia = new JLabel("Frequência:");
         String[] opcoesFrequencia = {"Diária", "Semanal", "Mensal"};
         JComboBox<String> comboFrequencia = new JComboBox<>(opcoesFrequencia);
-        comboFrequencia.setEnabled(false); // só habilita se marcada a recorrência
+        comboFrequencia.setEnabled(false);
 
         chkRecorrente.addActionListener(e -> comboFrequencia.setEnabled(chkRecorrente.isSelected()));
 
@@ -75,8 +94,9 @@ public class NovaTransacaoView extends JFrame {
                 String categoria = comboCategoria.getSelectedItem().toString();
                 Date selectedDate = (Date) datePicker.getModel().getValue();
                 String observacao = txtObservacao.getText().trim();
+                String nomeConta = (String) comboContas.getSelectedItem();
 
-                if (descricao.isEmpty() || valorStr.isEmpty() || selectedDate == null || categoria == null) {
+                if (descricao.isEmpty() || valorStr.isEmpty() || selectedDate == null || categoria == null || nomeConta == null) {
                     JOptionPane.showMessageDialog(this, "Todos os campos devem ser preenchidos.", "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -103,8 +123,8 @@ public class NovaTransacaoView extends JFrame {
                 t.setCategoria(categoria);
                 t.setData_transacao(dataTransacao);
                 t.setObservacao(observacao);
+                t.setContaId(contasMap.get(nomeConta));
 
-                // Recorrência
                 t.setRecorrente(chkRecorrente.isSelected());
                 if (chkRecorrente.isSelected()) {
                     t.setFrequencia(comboFrequencia.getSelectedItem().toString());
@@ -120,9 +140,9 @@ public class NovaTransacaoView extends JFrame {
             }
         });
 
-        // Layout
-        setLayout(new GridLayout(10, 2, 5, 5));
+        // Adiciona ao layout
         add(lblTipo); add(comboTipo);
+        add(lblConta); add(comboContas);
         add(lblDescricao); add(txtDescricao);
         add(lblValor); add(txtValor);
         add(lblCategoria); add(comboCategoria);
