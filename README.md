@@ -47,12 +47,4 @@ organiza/
 
 ## 🤝 Contribuição
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests.([GitHub][5])
-
-## 📄 Licença
-
-Este projeto está licenciado sob a [MIT License](LICENSE).
-
----
-
-Para mais detalhes, acesse o repositório oficial: [github.com/vagnercruz/organiza](https://github.com/vagnercruz/organiza)
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests.
